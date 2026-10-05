@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>websocket chat</title>
+</head>
+<body>
+    <h1>
+        my websocket app
+    </h1>
+    <div id="messages"></div>
+   
+
+    <input
+    id="usernameInput"
+    type="text"
+    placeholder="enter your name ">
+
+    <input
+        id="messageInput"
+        type="text"
+        placeholder="Type a message"
+    >
+     <p id="typethemsg"></p>
+
+    <button id="sendButton">Send</button>
+
+    <script>
+        const socket =
+            new WebSocket("ws://localhost:8000");
+        const usernameInput=document.getElementById("usernameInput");
+        const messageInput =
+            document.getElementById("messageInput");
+        const sendButton =
+            document.getElementById("sendButton");
+        const messages =
+            document.getElementById("messages");
+        const typethemsg=document.getElementById("typethemsg");
+        
+        sendButton.addEventListener("click", () => {
+            const message = messageInput.value;
+            const username=usernameInput.value;
+
+            if(message===""){
+                return;
+            }
+            const data={
+                type:"message",
+                username:username,
+                text:message
+            }
+            socket.send(JSON.stringify(data));
+            messageInput.value="";
+            usernameInput.value="";''
+        });
+        messageInput.addEventListener("input",()=>{
+            const username=usernameInput.value;
+            const data={
+                type:"typing",
+                username:username
+            }
+        socket.send(JSON.stringify(data));
+
+        });
+        socket.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === "message") {
+                const messageElement =
+                document.createElement("p");
+
+        messageElement.textContent =
+            data.username + ": " + data.text;
+
+        messages.appendChild(messageElement);
+
+    }
+
+    if (data.type === "typing") {
+
+        typethemsg.textContent =
+            data.username + " is typing...";
+    }
+
+}
+        socket.onclose=()=>{
+            console.log("connection is disconnected")
+        }
+</script>
+</body>
+</html>    
+
+
